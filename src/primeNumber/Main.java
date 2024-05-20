@@ -20,6 +20,7 @@ class PrimeMonitor {
 class PrimeRun implements Runnable {
     private int anInt;
     private PrimeMonitor monitor;
+    int newNumber;
 
     public PrimeRun( int end, PrimeMonitor monitor) {
         this.anInt = end;
@@ -31,12 +32,18 @@ class PrimeRun implements Runnable {
         String threadName = Thread.currentThread().getName();
         while(number < anInt) {
             lock.lock();
-            int newNumber = number;
-            number = newNumber + 1;
-            lock.unlock();
+            try {
+                newNumber = number;
+                if (newNumber >= anInt) {
+                    break;
+                }
+                number = newNumber + 1;
+            }finally {
+                lock.unlock();
+            }
             if (isPrime(newNumber)) {
                 monitor.addPrime(newNumber);
-               // System.out.println(threadName + " found prime: " + newNumber);
+                //System.out.println(threadName + " found prime: " + newNumber);
             }
         }
     }
@@ -79,9 +86,9 @@ public class Main {
         long end = System.currentTimeMillis();
 
         List<Integer> primes = monitor.getPrimes();
-        System.out.println("Found " + primes.size() + " prime numbers:");
-       // System.out.println(primes);
-        System.out.println("number of threads: " + numThreads);
+        System.out.println(" prime numbers: " + primes);
+        System.out.println("Found " + primes.size() + " prime numbers");
+        System.out.println("Number of threads: " + numThreads);
         System.out.println("Time taken: " + (end - start));
     }
 }
